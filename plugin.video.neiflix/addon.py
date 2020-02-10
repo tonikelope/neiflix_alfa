@@ -6,18 +6,24 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 
-BASE_URL="https://raw.githubusercontent.com/tonikelope/neiflix/master/libreelec/storage/.kodi/addons/plugin.video.alfa/"
+ALFA_URL= "https://raw.githubusercontent.com/tonikelope/neiflix_alfa/master/plugin.video.alfa/"
 
-BASE_PATH=xbmc.translatePath('special://home/addons/plugin.video.alfa/')
+ALFA_PATH=xbmc.translatePath('special://home/addons/plugin.video.alfa/')
 
 FILES=['servers/nei.json', 'servers/nei.py', 'channels/neiflix.py', 'channels/neiflix.json', 'resources/media/channels/banner/neiflix2_b.png', 'resources/media/channels/thumb/neiflix2_t.png', 'resources/media/channels/fanart/neiflix2_f.png']
 
+installed = False
+
 for f in FILES:
-    if not os.path.exists(BASE_PATH + f):
-        urllib.urlretrieve(BASE_URL + f, BASE_PATH + f)
+    if not os.path.exists(ALFA_PATH + f):
+        urllib.urlretrieve(ALFA_URL + f, ALFA_PATH + f)
+        installed=True
 
 addon = xbmcaddon.Addon()
 
 addonname = addon.getAddonInfo('name')
 
-xbmcgui.Dialog().ok(addonname, 'Se ha instalado el CANAL NEIFLIX en ALFA. Ahora debería salirte en la lista de canales de ALFA.')
+if installed:
+    xbmcgui.Dialog().ok(addonname, 'Se ha añadido NEIFLIX a ALFA. (Ahora debería salirte en la lista de canales de ALFA).')
+else:
+    xbmcgui.Dialog().ok(addonname, 'Para entrar a NEIFLIX tienes que hacerlo a través de la lista de canales de ALFA. (Este icono sólo se usa para instalar NEIFLIX la primera vez).')
