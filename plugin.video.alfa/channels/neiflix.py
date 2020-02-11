@@ -25,7 +25,7 @@ from platformcode import platformtools
 
 CHECK_MEGA_LIB = True
 
-NEIFLIX_VERSION = "1.16"
+NEIFLIX_VERSION = "1.17"
 
 NEIFLIX_LOGIN = config.get_setting("neiflix_user", "neiflix")
 
@@ -1244,10 +1244,10 @@ def get_filmaffinity_data(title):
 def improve_stream(item):
     if not os.path.exists(KODI_USERDATA_PATH + 'advancedsettings.xml'):
         urllib.urlretrieve(GITHUB_BASE_URL + advancedsettings.xml, KODI_USERDATA_PATH + 'advancedsettings.xml')
-        xbmcgui.Dialog().ok(addonname,
+        xbmcgui.Dialog().ok(xbmcaddon.Addon().getAddonInfo('name'),
                             'Streaming de vídeo optimizado. (ES NECESARIO REINICIAR KODI PARA QUE TENGA EFECTO).')
     else:
-        xbmcgui.Dialog().ok(addonname,
+        xbmcgui.Dialog().ok(xbmcaddon.Addon().getAddonInfo('name'),
                             'ERROR: ya existe advancedsettings.xml (Probablemente ya usaste la función de optimizar antes).')
 
 
