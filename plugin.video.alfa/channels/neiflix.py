@@ -25,7 +25,7 @@ from platformcode import platformtools
 
 CHECK_MEGA_LIB = True
 
-NEIFLIX_VERSION = "1.14"
+NEIFLIX_VERSION = "1.15"
 
 NEIFLIX_LOGIN = config.get_setting("neiflix_user", "neiflix")
 
@@ -40,6 +40,10 @@ MEGA_PASSWORD = config.get_setting("neiflix_mega_password", "neiflix")
 USE_MC_REVERSE = config.get_setting("neiflix_use_mc_reverse", "neiflix")
 
 KODI_TEMP_PATH = xbmc.translatePath('special://temp/')
+
+KODI_USERDATA_PATH = xbmc.translatePath('special://userdata/')
+
+GITHUB_BASE_URL = "https://raw.githubusercontent.com/tonikelope/neiflix_alfa/master/"
 
 ALFA_URL = "https://raw.githubusercontent.com/tonikelope/neiflix_alfa/master/plugin.video.alfa/"
 
@@ -233,6 +237,12 @@ def mainlist(item):
             itemlist.append(
                 Item(
                     channel=item.channel,
+                    title="[B]Instalar mejora de streaming de vídeo[/B]",
+                    action="improve_stream"))
+
+            itemlist.append(
+                Item(
+                    channel=item.channel,
                     title="[B]Borrar caché[/B]",
                     action="clean_cache"))
 
@@ -249,16 +259,17 @@ def mainlist(item):
                 Item(channel=item.channel,
                      title="[COLOR red][B]ERROR: Usuario y/o password de NOESTASINVITADO.COM incorrectos (revisa la configuración).[/B][/COLOR]",
                      action="", url="", folder=False))
-            
-            itemlist.append(
-            Item(channel=item.channel, title="[COLOR darkorange][B]Habilita tu cuenta en la configuración.[/B][/COLOR]",
-                 action="settings_nei",
-                 url=""))
 
             itemlist.append(
-            Item(channel=item.channel, title="[B]Reintentar login[/B]",
-                 action="mainlist",
-                 url=""))
+                Item(channel=item.channel,
+                     title="[COLOR darkorange][B]Habilita tu cuenta en la configuración.[/B][/COLOR]",
+                     action="settings_nei",
+                     url=""))
+
+            itemlist.append(
+                Item(channel=item.channel, title="[B]Reintentar login[/B]",
+                     action="mainlist",
+                     url=""))
 
     return itemlist
 
@@ -1228,6 +1239,16 @@ def get_filmaffinity_data(title):
         thumb_url = None
 
     return [rate, thumb_url]
+
+
+def improve_stream():
+    if not os.path.exists(KODI_USERDATA_PATH + 'advancedsettings.xml'):
+        urllib.urlretrieve(GITHUB_BASE_URL + advancedsettings.xml, KODI_USERDATA_PATH + 'advancedsettings.xml')
+        xbmcgui.Dialog().ok(addonname,
+                            'Streaming de vídeo optimizado. (ES NECESARIO REINICIAR KODI PARA QUE TENGA EFECTO).')
+    else:
+        xbmcgui.Dialog().ok(addonname,
+                            'ERROR: ya existe advancedsettings.xml (Probablemente ya usaste la función de optimizar antes).')
 
 
 # NEIFLIX uses a modified version of Alfa's MEGA LIB with support for MEGACRYPTER and multi thread
