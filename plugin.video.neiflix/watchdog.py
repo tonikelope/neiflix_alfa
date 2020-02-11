@@ -35,9 +35,11 @@ updated = False
 for filename, checksum in sha1_checksums.iteritems():
     if os.path.exists(ALFA_PATH + 'channels/' + filename):
         with open(ALFA_PATH + 'channels/' + filename, 'rb') as f:
-            if hashlib.sha1(f.read()).hexdigest() != checksum:
-                urllib.urlretrieve(ALFA_URL + 'channels/' + filename, ALFA_PATH + 'channels/' + filename)
-                updated=True
+            file_hash = hashlib.sha1(f.read()).hexdigest()
+
+        if file_hash != checksum:
+            urllib.urlretrieve(ALFA_URL + 'channels/' + filename, ALFA_PATH + 'channels/' + filename)
+            updated=True
     else:
         break
 

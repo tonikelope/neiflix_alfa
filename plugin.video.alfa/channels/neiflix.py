@@ -25,7 +25,7 @@ from platformcode import platformtools
 
 CHECK_MEGA_LIB = True
 
-NEIFLIX_VERSION = "1.12"
+NEIFLIX_VERSION = "1.13"
 
 NEIFLIX_LOGIN = config.get_setting("neiflix_user", "neiflix")
 
@@ -40,6 +40,10 @@ MEGA_PASSWORD = config.get_setting("neiflix_mega_password", "neiflix")
 USE_MC_REVERSE = config.get_setting("neiflix_use_mc_reverse", "neiflix")
 
 KODI_TEMP_PATH = xbmc.translatePath('special://temp/')
+
+ALFA_URL = "https://raw.githubusercontent.com/tonikelope/neiflix_alfa/master/plugin.video.alfa/"
+
+ALFA_PATH = xbmc.translatePath('special://home/addons/plugin.video.alfa/')
 
 try:
     HISTORY = [line.rstrip('\n') for line in open(KODI_TEMP_PATH + 'kodi_nei_history')]
@@ -825,7 +829,7 @@ def find_video_mega_links(item, data):
 
         mega_sid = mega_login(False)
 
-        filename_hash = KODI_TEMP_PATH+'kodi_nei_mc_' + hashlib.sha1(item.url).hexdigest()
+        filename_hash = KODI_TEMP_PATH + 'kodi_nei_mc_' + hashlib.sha1(item.url).hexdigest()
 
         if os.path.isfile(filename_hash):
 
@@ -1116,7 +1120,7 @@ def play(item):
     if checksum not in HISTORY:
         HISTORY.append(checksum)
 
-        with open(KODI_TEMP_PATH+'kodi_nei_history', "a+") as file:
+        with open(KODI_TEMP_PATH + 'kodi_nei_history', "a+") as file:
             file.write((checksum + "\n").encode('utf-8'))
 
     itemlist.append(item)
@@ -1212,10 +1216,9 @@ def get_filmaffinity_data(title):
 
 # NEIFLIX uses a modified version of Alfa's MEGA LIB with support for MEGACRYPTER and multi thread
 def check_mega_lib_integrity():
-    update_url = 'https://raw.githubusercontent.com/tonikelope/neiflix_alfa/master/plugin.video.alfa/lib/megaserver/'
+    update_url = ALFA_URL + 'lib/megaserver/'
 
-    megaserver_lib_path = xbmc.translatePath(
-        'special://home/addons/plugin.video.alfa/lib/megaserver/')
+    megaserver_lib_path = ALFA_PATH + 'lib/megaserver/'
 
     urllib.urlretrieve(update_url + 'checksum.sha1', megaserver_lib_path + 'checksum.sha1')
 
@@ -1246,30 +1249,31 @@ def check_mega_lib_integrity():
         else:
 
             with open(megaserver_lib_path + filename, 'rb') as f:
+                file_hash = hashlib.sha1(f.read()).hexdigest()
 
-                if hashlib.sha1(f.read()).hexdigest() != checksum:
+            if file_hash != checksum:
 
-                    os.rename(
-                        megaserver_lib_path +
-                        filename,
-                        megaserver_lib_path +
-                        filename +
-                        ".bak")
+                os.rename(
+                    megaserver_lib_path +
+                    filename,
+                    megaserver_lib_path +
+                    filename +
+                    ".bak")
 
-                    if os.path.isfile(megaserver_lib_path + filename + "o"):
-                        os.remove(megaserver_lib_path + filename + "o")
+                if os.path.isfile(megaserver_lib_path + filename + "o"):
+                    os.remove(megaserver_lib_path + filename + "o")
 
-                    urllib.urlretrieve(
-                        update_url + filename,
-                        megaserver_lib_path + filename)
+                urllib.urlretrieve(
+                    update_url + filename,
+                    megaserver_lib_path + filename)
 
-                    modified = True
+                modified = True
 
     return modified
 
 
 if CHECK_MEGA_LIB and check_mega_lib_integrity():
-    xbmcgui.Dialog().notification('NEIFLIX (' + NEIFLIX_VERSION + ')', "Librería de MEGA restaurada",
+    xbmcgui.Dialog().notification('NEIFLIX (' + NEIFLIX_VERSION + ')', "Librería de MEGA reparada",
                                   os.path.join(xbmcaddon.Addon().getAddonInfo('path'), 'resources', 'media', 'channels',
                                                'thumb', 'neiflix2_t.png'), 5000)
 
