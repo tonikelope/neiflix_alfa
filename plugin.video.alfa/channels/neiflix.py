@@ -25,7 +25,7 @@ from platformcode import platformtools
 
 CHECK_MEGA_LIB = True
 
-NEIFLIX_VERSION = "1.15"
+NEIFLIX_VERSION = "1.16"
 
 NEIFLIX_LOGIN = config.get_setting("neiflix_user", "neiflix")
 
@@ -1241,7 +1241,7 @@ def get_filmaffinity_data(title):
     return [rate, thumb_url]
 
 
-def improve_stream():
+def improve_stream(item):
     if not os.path.exists(KODI_USERDATA_PATH + 'advancedsettings.xml'):
         urllib.urlretrieve(GITHUB_BASE_URL + advancedsettings.xml, KODI_USERDATA_PATH + 'advancedsettings.xml')
         xbmcgui.Dialog().ok(addonname,
