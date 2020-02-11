@@ -25,7 +25,7 @@ from platformcode import platformtools
 
 CHECK_MEGA_LIB = True
 
-NEIFLIX_VERSION = "1.13"
+NEIFLIX_VERSION = "1.14"
 
 NEIFLIX_LOGIN = config.get_setting("neiflix_user", "neiflix")
 
@@ -192,6 +192,11 @@ def mainlist(item):
             Item(channel=item.channel, title="[COLOR darkorange][B]Habilita tu cuenta en la configuración.[/B][/COLOR]",
                  action="settings_nei",
                  url=""))
+
+        itemlist.append(
+            Item(channel=item.channel, title="[B]Reintentar login[/B]",
+                 action="mainlist",
+                 url=""))
     else:
         if login():
             xbmcgui.Dialog().notification('NEIFLIX (' + NEIFLIX_VERSION + ')', "¡Bienvenido " + NEIFLIX_LOGIN + "!",
@@ -244,6 +249,17 @@ def mainlist(item):
                 Item(channel=item.channel,
                      title="[COLOR red][B]ERROR: Usuario y/o password de NOESTASINVITADO.COM incorrectos (revisa la configuración).[/B][/COLOR]",
                      action="", url="", folder=False))
+            
+            itemlist.append(
+            Item(channel=item.channel, title="[COLOR darkorange][B]Habilita tu cuenta en la configuración.[/B][/COLOR]",
+                 action="settings_nei",
+                 url=""))
+
+            itemlist.append(
+            Item(channel=item.channel, title="[B]Reintentar login[/B]",
+                 action="mainlist",
+                 url=""))
+
     return itemlist
 
 
