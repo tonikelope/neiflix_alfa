@@ -25,7 +25,7 @@ from platformcode import platformtools
 
 CHECK_MEGA_LIB = True
 
-NEIFLIX_VERSION = "1.17"
+NEIFLIX_VERSION = "1.18"
 
 NEIFLIX_LOGIN = config.get_setting("neiflix_user", "neiflix")
 
@@ -321,7 +321,7 @@ def foro(item):
         patron = '<a class="subje(.*?)t" href="([^"]+)" name="[^"]+">([^<]+)</a(>)'
         action = "foro"
     elif '"subject windowbg4"' in data:
-        patron = '<td class="subject windowbg4">.*?<div *?>.*?<span id="([^"]+)"> *?<a href="([^"]+)".*?>([^<]+)</a> ' \
+        patron = '<td class="subject windowbg4">.*?<div *?>.*?<span id="([^"]+)">.*?< *?a +href *?= *?"([^"]+)" *?>([^<]+)</a> ' \
                  '*?</span>.*?"Ver +perfil +de +([^"]+)"'
         final_item = True
         action = "foro"
