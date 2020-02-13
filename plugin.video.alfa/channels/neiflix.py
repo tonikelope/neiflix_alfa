@@ -25,7 +25,7 @@ from platformcode import platformtools
 
 CHECK_MEGA_LIB = True
 
-NEIFLIX_VERSION = "1.18"
+NEIFLIX_VERSION = "1.19"
 
 NEIFLIX_LOGIN = config.get_setting("neiflix_user", "neiflix")
 
@@ -190,17 +190,12 @@ def mainlist(item):
 
     if not NEIFLIX_LOGIN:
         xbmcgui.Dialog().notification('NEIFLIX (' + NEIFLIX_VERSION + ')', "ERROR AL HACER LOGIN EN NEI",
-                                      os.path.join(xbmcaddon.Addon().getAddonInfo('path'), 'resources', 'media',
-                                                   'channels', 'thumb', 'neiflix2_t.png'), 5000)
+                                          os.path.join(xbmcaddon.Addon().getAddonInfo('path'), 'resources', 'media',
+                                                       'channels', 'thumb', 'neiflix2_t.png'), 5000)
         itemlist.append(
-            Item(channel=item.channel, title="[COLOR darkorange][B]Habilita tu cuenta en la configuración.[/B][/COLOR]",
-                 action="settings_nei",
-                 url=""))
-
-        itemlist.append(
-            Item(channel=item.channel, title="[B]Reintentar login[/B]",
-                 action="mainlist",
-                 url=""))
+            Item(channel=item.channel,
+                     title="[COLOR darkorange][B]Habilita tu cuenta de NEI en preferencias.[/B][/COLOR]",
+                     action="settings_nei"))
     else:
         if login():
             xbmcgui.Dialog().notification('NEIFLIX (' + NEIFLIX_VERSION + ')', "¡Bienvenido " + NEIFLIX_LOGIN + "!",
@@ -218,7 +213,8 @@ def mainlist(item):
                                  url="https://noestasinvitado.com/deportes/", folder=True))
             itemlist.append(Item(channel=item.channel, title="Anime", action="foro",
                                  url="https://noestasinvitado.com/anime/", folder=True))
-            itemlist.append(Item(channel=item.channel, title="\"Guarreridas\"", action="foro",
+            if not os.path.exists(KODI_USERDATA_PATH+'neiflix_xxx'):
+                itemlist.append(Item(channel=item.channel, title="\"Guarreridas\"", action="foro",
                                  url="https://noestasinvitado.com/18-15/", folder=True))
             itemlist.append(Item(channel=item.channel, title="Listados alfabéticos", action="indices",
                                  url="https://noestasinvitado.com/indices/", folder=True))
@@ -237,8 +233,21 @@ def mainlist(item):
             itemlist.append(
                 Item(
                     channel=item.channel,
-                    title="[B]Instalar mejora de streaming de vídeo[/B]",
+                    title="Instalar mejora de streaming de vídeo",
                     action="improve_stream"))
+
+            if not os.path.exists(KODI_USERDATA_PATH+'neiflix_xxx'):
+                itemlist.append(
+                    Item(
+                    channel=item.channel,
+                    title="Desactivar contenido adulto",
+                    action="xxx_off"))
+            else:
+                itemlist.append(
+                    Item(
+                    channel=item.channel,
+                    title="Reactivar contenido adulto",
+                    action="xxx_on"))
 
             itemlist.append(
                 Item(
@@ -257,25 +266,68 @@ def mainlist(item):
                                                        'channels', 'thumb', 'neiflix2_t.png'), 5000)
             itemlist.append(
                 Item(channel=item.channel,
-                     title="[COLOR red][B]ERROR: Usuario y/o password de NOESTASINVITADO.COM incorrectos (revisa la configuración).[/B][/COLOR]",
-                     action="", url="", folder=False))
+                     title="[COLOR red][B]ERROR: Usuario y/o password de NEI incorrectos (revisa las preferencias)[/B][/COLOR]",
+                     action=""))
 
             itemlist.append(
                 Item(channel=item.channel,
-                     title="[COLOR darkorange][B]Habilita tu cuenta en la configuración.[/B][/COLOR]",
-                     action="settings_nei",
-                     url=""))
-
-            itemlist.append(
-                Item(channel=item.channel, title="[B]Reintentar login[/B]",
-                     action="mainlist",
-                     url=""))
+                     title="[COLOR darkorange][B]Habilita tu cuenta de NEI en preferencias.[/B][/COLOR]",
+                     action="settings_nei"))
 
     return itemlist
 
 
 def settings_nei(item):
-    return platformtools.show_channel_settings()
+	platformtools.show_channel_settings()
+
+	global NEIFLIX_LOGIN, NEIFLIX_PASSWORD, USE_MEGA_PREMIUM, MEGA_EMAIL, MEGA_PASSWORD, USE_MC_REVERSE
+
+	NEIFLIX_LOGIN = config.get_setting("neiflix_user", "neiflix")
+
+	NEIFLIX_PASSWORD = config.get_setting("neiflix_password", "neiflix")
+
+	USE_MEGA_PREMIUM = config.get_setting("neiflix_mega_premium", "neiflix")
+
+	MEGA_EMAIL = config.get_setting("neiflix_mega_email", "neiflix")
+
+	MEGA_PASSWORD = config.get_setting("neiflix_mega_password", "neiflix")
+
+	USE_MC_REVERSE = config.get_setting("neiflix_use_mc_reverse", "neiflix")
+
+	return mainlist(item)
+
+
+def xxx_off(item):
+	if not os.path.exists(KODI_USERDATA_PATH+'neiflix_xxx'):
+
+		pass_hash=xbmcgui.Dialog().input('Introduce una contraseña por si quieres reactivar el contenido adulto más tarde', type=xbmcgui.INPUT_PASSWORD)
+
+		if pass_hash:
+			f = open(KODI_USERDATA_PATH+'neiflix_xxx', "w+")
+			f.write(pass_hash)
+			f.close()
+			xbmcgui.Dialog().notification('NEIFLIX (' + NEIFLIX_VERSION + ')', "Porno desactivado",os.path.join(xbmcaddon.Addon().getAddonInfo('path'), 'resources', 'media', 'channels', 'thumb', 'neiflix2_t.png'), 5000)
+			return mainlist(item)
+	else:
+		return mainlist(item)
+
+
+def xxx_on(item):
+	if os.path.exists(KODI_USERDATA_PATH+'neiflix_xxx'):
+		password=xbmcgui.Dialog().input('Introduce la contraseña', type=xbmcgui.INPUT_ALPHANUM, option=xbmcgui.ALPHANUM_HIDE_INPUT)
+
+		if password:
+			with open(KODI_USERDATA_PATH+'neiflix_xxx','r') as f:
+				file_pass = f.read()
+
+			if hashlib.md5(password).hexdigest() == file_pass:
+				os.remove(KODI_USERDATA_PATH+'neiflix_xxx')
+				xbmcgui.Dialog().notification('NEIFLIX (' + NEIFLIX_VERSION + ')', "Porno reactivado",os.path.join(xbmcaddon.Addon().getAddonInfo('path'), 'resources', 'media', 'channels', 'thumb', 'neiflix2_t.png'), 5000)
+				return mainlist(item)
+			else:
+				xbmcgui.Dialog().ok('NEIFLIX: reactivar contenido adulto','Contraseña incorrecta')
+	else:
+		return mainlist(item)
 
 
 def clean_cache(item):
@@ -1243,12 +1295,13 @@ def get_filmaffinity_data(title):
 
 def improve_stream(item):
     if not os.path.exists(KODI_USERDATA_PATH + 'advancedsettings.xml'):
-        urllib.urlretrieve(GITHUB_BASE_URL + advancedsettings.xml, KODI_USERDATA_PATH + 'advancedsettings.xml')
-        xbmcgui.Dialog().ok(xbmcaddon.Addon().getAddonInfo('name'),
-                            'Streaming de vídeo optimizado. (ES NECESARIO REINICIAR KODI PARA QUE TENGA EFECTO).')
+        urllib.urlretrieve(GITHUB_BASE_URL + 'advancedsettings.xml', KODI_USERDATA_PATH + 'advancedsettings.xml')
+        ret=xbmcgui.Dialog().yesno('NEIFLIX', 'Streaming de vídeo optimizado. ES NECESARIO REINICIAR KODI PARA QUE TENGA EFECTO. ¿Quieres reiniciar KODI ahora mismo?')
+        
+        if ret:
+            xbmc.executebuiltin('RestartApp')
     else:
-        xbmcgui.Dialog().ok(xbmcaddon.Addon().getAddonInfo('name'),
-                            'ERROR: ya existe advancedsettings.xml (Probablemente ya usaste la función de optimizar antes).')
+        xbmcgui.Dialog().ok('NEIFLIX', 'ERROR: ya existe el archivo [advancedsettings.xml] (Probablemente ya instalaste esta función antes).')
 
 
 # NEIFLIX uses a modified version of Alfa's MEGA LIB with support for MEGACRYPTER and multi thread
@@ -1310,7 +1363,7 @@ def check_mega_lib_integrity():
 
 
 if CHECK_MEGA_LIB and check_mega_lib_integrity():
-    xbmcgui.Dialog().notification('NEIFLIX (' + NEIFLIX_VERSION + ')', "Librería de MEGA reparada",
+    xbmcgui.Dialog().notification('NEIFLIX (' + NEIFLIX_VERSION + ')', "Librería de MEGA/MegaCrypter reparada",
                                   os.path.join(xbmcaddon.Addon().getAddonInfo('path'), 'resources', 'media', 'channels',
                                                'thumb', 'neiflix2_t.png'), 5000)
 
