@@ -25,7 +25,7 @@ from platformcode import platformtools
 
 CHECK_MEGA_LIB = True
 
-NEIFLIX_VERSION = "1.19"
+NEIFLIX_VERSION = "1.20"
 
 NEIFLIX_LOGIN = config.get_setting("neiflix_user", "neiflix")
 
@@ -215,7 +215,7 @@ def mainlist(item):
                                  url="https://noestasinvitado.com/anime/", folder=True))
             if not os.path.exists(KODI_USERDATA_PATH+'neiflix_xxx'):
                 itemlist.append(Item(channel=item.channel, title="\"Guarreridas\"", action="foro",
-                                 url="https://noestasinvitado.com/18-15/", folder=True))
+                                 url="https://noestasinvitado.com/18-15/", folder=True, xxx=True))
             itemlist.append(Item(channel=item.channel, title="Listados alfabéticos", action="indices",
                                  url="https://noestasinvitado.com/indices/", folder=True))
             itemlist.append(
@@ -359,6 +359,9 @@ def clean_history(item):
 
 def foro(item):
     logger.info("channels.neiflix foro")
+
+    if item.xxx and os.path.exists(KODI_USERDATA_PATH+'neiflix_xxx'):
+        return mainlist(item)
 
     itemlist = []
 
