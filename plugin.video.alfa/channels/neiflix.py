@@ -25,7 +25,7 @@ from platformcode import platformtools
 
 CHECK_MEGA_LIB = True
 
-NEIFLIX_VERSION = "1.20"
+NEIFLIX_VERSION = "1.21"
 
 NEIFLIX_LOGIN = config.get_setting("neiflix_user", "neiflix")
 
@@ -1299,12 +1299,12 @@ def get_filmaffinity_data(title):
 def improve_stream(item):
     if not os.path.exists(KODI_USERDATA_PATH + 'advancedsettings.xml'):
         urllib.urlretrieve(GITHUB_BASE_URL + 'advancedsettings.xml', KODI_USERDATA_PATH + 'advancedsettings.xml')
-        ret=xbmcgui.Dialog().yesno('NEIFLIX', 'Streaming de vídeo optimizado. ES NECESARIO REINICIAR KODI PARA QUE TENGA EFECTO. ¿Quieres reiniciar KODI ahora mismo?')
+        ret=xbmcgui.Dialog().yesno('NEIFLIX', 'Streaming de vídeo optimizado.\nES NECESARIO REINICIAR KODI PARA QUE TENGA EFECTO.\n\n¿Quieres reiniciar KODI ahora mismo?')
         
         if ret:
             xbmc.executebuiltin('RestartApp')
     else:
-        xbmcgui.Dialog().ok('NEIFLIX', 'ERROR: ya existe el archivo [advancedsettings.xml] (Probablemente ya instalaste esta función antes).')
+        xbmcgui.Dialog().ok('NEIFLIX', 'ERROR: ya existe el archivo [advancedsettings.xml]\n(Probablemente ya instalaste esta función antes).')
 
 
 # NEIFLIX uses a modified version of Alfa's MEGA LIB with support for MEGACRYPTER and multi thread
