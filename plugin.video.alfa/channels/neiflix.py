@@ -23,9 +23,9 @@ from core.item import Item
 from platformcode import config, logger
 from platformcode import platformtools
 
-CHECK_MEGA_LIB = True
+CHECK_MEGA_STUFF_INTEGRITY = True
 
-NEIFLIX_VERSION = "1.21"
+NEIFLIX_VERSION = "1.22"
 
 NEIFLIX_LOGIN = config.get_setting("neiflix_user", "neiflix")
 
@@ -1365,8 +1365,71 @@ def check_mega_lib_integrity():
     return modified
 
 
-if CHECK_MEGA_LIB and check_mega_lib_integrity():
-    xbmcgui.Dialog().notification('NEIFLIX (' + NEIFLIX_VERSION + ')', "Librería de MEGA/MegaCrypter reparada",
+# NEIFLIX uses a modified version of Alfa's MEGA connector with support for MEGACRYPTER and multi thread
+def check_nei_connector_integrity():
+    update_url = ALFA_URL + 'servers/'
+
+    connectors_path = ALFA_PATH + 'servers/'
+
+    urllib.urlretrieve(update_url + 'checksum.sha1', connectors_path + 'checksum.sha1')
+
+    sha1_checksums = {}
+
+    with open(connectors_path + 'checksum.sha1') as f:
+        for line in f:
+            strip_line = line.strip()
+            if strip_line:
+                parts = re.split(' +', line.strip())
+                sha1_checksums[parts[1]] = parts[0]
+
+    modified = False
+
+    if not os.path.exists(connectors_path):
+        os.mkdir(connectors_path)
+
+    for filename, checksum in sha1_checksums.iteritems():
+
+        if not os.path.exists(connectors_path + filename):
+
+            urllib.urlretrieve(
+                update_url + filename,
+                connectors_path + filename)
+
+            modified = True
+
+        else:
+
+            with open(connectors_path + filename, 'rb') as f:
+                file_hash = hashlib.sha1(f.read()).hexdigest()
+
+            if file_hash != checksum:
+
+                os.rename(
+                    connectors_path +
+                    filename,
+                    connectors_path +
+                    filename +
+                    ".bak")
+
+                if os.path.isfile(connectors_path + filename + "o"):
+                    os.remove(connectors_path + filename + "o")
+
+                urllib.urlretrieve(
+                    update_url + filename,
+                    connectors_path + filename)
+
+                modified = True
+
+    return modified
+
+
+if CHECK_MEGA_STUFF_INTEGRITY and check_mega_lib_integrity():
+    xbmcgui.Dialog().notification('NEIFLIX (' + NEIFLIX_VERSION + ')', "Librería de MEGA/MegaCrypter reparada/actualizada",
+                                  os.path.join(xbmcaddon.Addon().getAddonInfo('path'), 'resources', 'media', 'channels',
+                                               'thumb', 'neiflix2_t.png'), 5000)
+
+if CHECK_MEGA_STUFF_INTEGRITY and check_nei_connector_integrity():
+    xbmcgui.Dialog().notification('NEIFLIX (' + NEIFLIX_VERSION + ')', "Conector de NEI reparado/actualizado",
                                   os.path.join(xbmcaddon.Addon().getAddonInfo('path'), 'resources', 'media', 'channels',
                                                'thumb', 'neiflix2_t.png'), 5000)
 
