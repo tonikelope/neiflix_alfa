@@ -25,7 +25,7 @@ from platformcode import platformtools
 
 CHECK_MEGA_STUFF_INTEGRITY = True
 
-NEIFLIX_VERSION = "1.22"
+NEIFLIX_VERSION = "1.23"
 
 NEIFLIX_LOGIN = config.get_setting("neiflix_user", "neiflix")
 
@@ -1384,9 +1384,6 @@ def check_nei_connector_integrity():
 
     modified = False
 
-    if not os.path.exists(connectors_path):
-        os.mkdir(connectors_path)
-
     for filename, checksum in sha1_checksums.iteritems():
 
         if not os.path.exists(connectors_path + filename):
@@ -1403,13 +1400,6 @@ def check_nei_connector_integrity():
                 file_hash = hashlib.sha1(f.read()).hexdigest()
 
             if file_hash != checksum:
-
-                os.rename(
-                    connectors_path +
-                    filename,
-                    connectors_path +
-                    filename +
-                    ".bak")
 
                 if os.path.isfile(connectors_path + filename + "o"):
                     os.remove(connectors_path + filename + "o")
