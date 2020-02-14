@@ -10,7 +10,7 @@ ALFA_URL= "https://raw.githubusercontent.com/tonikelope/neiflix_alfa/master/plug
 
 ALFA_PATH=xbmc.translatePath('special://home/addons/plugin.video.alfa/')
 
-FILES=['channels/neiflix.py', 'channels/neiflix.json', 'resources/media/channels/banner/neiflix2_b.png', 'resources/media/channels/thumb/neiflix2_t.png', 'resources/media/channels/fanart/neiflix2_f.png']
+FILES=['channels/neiflix.py', 'channels/neiflix.json', 'servers/nei.py', 'servers/nei.json', 'resources/media/channels/banner/neiflix2_b.png', 'resources/media/channels/thumb/neiflix2_t.png', 'resources/media/channels/fanart/neiflix2_f.png']
 
 installed = False
 
