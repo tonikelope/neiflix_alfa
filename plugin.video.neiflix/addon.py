@@ -19,11 +19,7 @@ for f in FILES:
         urllib.urlretrieve(ALFA_URL + f, ALFA_PATH + f)
         installed=True
 
-addon = xbmcaddon.Addon()
-
-addonname = addon.getAddonInfo('name')
-
 if installed:
-    xbmcgui.Dialog().ok(addonname, 'Se ha añadido NEIFLIX a ALFA.\n(Ahora debería salirte en la lista de canales de ALFA).')
+    xbmcgui.Dialog().ok(xbmcaddon.Addon().getAddonInfo('name'), 'Se ha añadido NEIFLIX a ALFA.\n(Ahora debería salirte en la lista de canales de ALFA).')
 else:
-    xbmcgui.Dialog().ok(addonname, 'Para entrar a NEIFLIX tienes que hacerlo a través de la lista de canales de ALFA.\n(Este icono sólo se usa para instalar NEIFLIX la primera vez).')
+    xbmcgui.Dialog().ok(xbmcaddon.Addon().getAddonInfo('name'), 'Para entrar a NEIFLIX tienes que hacerlo a través de la lista de canales de ALFA.\n(Este icono sólo se usa para instalar NEIFLIX la primera vez).')
