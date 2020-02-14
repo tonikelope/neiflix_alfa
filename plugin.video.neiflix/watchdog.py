@@ -44,6 +44,7 @@ for filename, checksum in sha1_checksums.iteritems():
             break
     else:
         broken = True
+        break
 
 os.remove(KODI_TEMP_PATH + 'neiflix_channel.sha1')
 
