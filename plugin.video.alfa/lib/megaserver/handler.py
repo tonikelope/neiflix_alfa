@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
-# Basado en la librería de MEGA que programó divadr y modificado por tonikelope para dar soporte a MEGACRYPTER
-
-import os
-import re
-import time
-import types
-import urllib
+#Basado en la librería de MEGA que programó divadr y modificado por tonikelope para dar soporte a MEGACRYPTER
 
 import BaseHTTPServer
 import urlparse
+import time
+import urllib
+import types
+import os
+import re
 
 
 class Handler(BaseHTTPServer.BaseHTTPRequestHandler):

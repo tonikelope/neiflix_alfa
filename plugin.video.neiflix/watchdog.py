@@ -20,6 +20,9 @@ FILES = ['channels/neiflix.py', 'channels/neiflix.json', 'servers/nei.py', 'serv
          'resources/media/channels/banner/neiflix2_b.png', 'resources/media/channels/thumb/neiflix2_t.png',
          'resources/media/channels/fanart/neiflix2_f.png']
 
+if not os.path.exists(xbmc.translatePath('special://home/addons/plugin.video.neiflix/installed')):
+    xbmc.executebuiltin("RunAddon('plugin.video.neiflix')")
+
 # CHECK NEIFLIX CHANNEL UPDATES
 
 urllib.urlretrieve(ALFA_URL + 'channels/checksum.sha1', KODI_TEMP_PATH + 'neiflix_channel.sha1')

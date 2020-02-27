@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-# Basado en la librería de MEGA que programó divadr y modificado por tonikelope para dar soporte a MEGACRYPTER
+#Basado en la librería de MEGA que programó divadr y modificado por tonikelope para dar soporte a MEGACRYPTER
 
-import os
 import threading
-
+import Chunk
 import ChunkDownloader
-import ChunkWriter
 import MegaProxyManager
-from platformcode import logger
-
+import ChunkWriter
+import time
+import os
+import urllib2
+from platformcode import platformtools,logger
 from .crypto import *
-
 try:
     from Crypto.Util import Counter
 except ImportError:
@@ -18,18 +18,18 @@ except ImportError:
 
 CHUNK_WORKERS = 10
 
-
 class Cursor(object):
     def __init__(self, file):
         self._file = file
         self.pos = 0
-        self.pipe_r = None
-        self.pipe_w = None
-        self.chunk_writer = None
-        self.chunk_downloaders = None
+        self.pipe_r=None
+        self.pipe_w=None
+        self.chunk_writer=None
+        self.chunk_downloaders=None
         self.initial_value = file.initial_value
         self.k = file.k
         self.proxy_manager = MegaProxyManager.MegaProxyManager()
+
 
     def mega_request(self, offset):
         if not self._file.url:
@@ -41,9 +41,10 @@ class Cursor(object):
         except Exception:
             self.stop_multi_download()
 
+
     def start_multi_download(self, offset):
 
-        self.pipe_r, self.pipe_w = os.pipe()
+        self.pipe_r,self.pipe_w=os.pipe()
 
         self.chunk_writer = ChunkWriter.ChunkWriter(self, self.pipe_w, offset, self._file.size - 1)
 
@@ -55,12 +56,13 @@ class Cursor(object):
 
         if len(self.chunk_downloaders) < CHUNK_WORKERS:
 
-            for c in range(0, CHUNK_WORKERS):
-                chunk_downloader = ChunkDownloader.ChunkDownloader(c + 1, self)
+            for c in range(0,CHUNK_WORKERS):
+                chunk_downloader = ChunkDownloader.ChunkDownloader(c+1, self)
                 self.chunk_downloaders.append(chunk_downloader)
                 t = threading.Thread(target=chunk_downloader.run)
                 t.daemon = True
                 t.start()
+
 
     def stop_multi_download(self):
 
@@ -95,11 +97,12 @@ class Cursor(object):
 
         self.chunk_downloaders = None
 
+
     def read(self, n=None):
         if not self.pipe_r:
             return
 
-        try:
+        try:    
             res = os.read(self.pipe_r, n)
         except Exception:
             res = None
@@ -109,6 +112,7 @@ class Cursor(object):
             self.pos += len(res)
         return res
 
+
     def seek(self, n):
         if n > self._file.size:
             n = self._file.size
@@ -117,11 +121,14 @@ class Cursor(object):
         self.mega_request(n)
         self.pos = n
 
+
     def tell(self):
         return self.pos
 
+
     def __enter__(self):
         return self
+
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.stop_multi_download()
@@ -131,13 +138,14 @@ class Cursor(object):
         if len(self._file.cursors) == 0:
             self._file.cursor = False
 
+
     def decode(self, data):
         return self.decryptor.decrypt(data)
 
+
     def prepare_decoder(self, offset):
         initial_value = self.initial_value + int(offset / 16)
-        self.decryptor = AES.new(a32_to_str(self.k), AES.MODE_CTR,
-                                 counter=Counter.new(128, initial_value=initial_value))
+        self.decryptor = AES.new(a32_to_str(self.k), AES.MODE_CTR, counter=Counter.new(128, initial_value=initial_value))
         rest = offset - int(offset / 16) * 16
         if rest:
             self.decode(str(0) * rest)

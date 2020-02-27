@@ -1,77 +1,84 @@
 # -*- coding: utf-8 -*-
 
-import os
 import threading
-
+import time
 import Queue
+import Chunk
+import os
 from platformcode import logger
+
 
 CHUNK_SIZE = 1048576
 
-
 class ChunkWriter():
 
-    def __init__(self, cursor, pipe, start_offset, end_offset):
-        self.cursor = cursor
-        self.pipe = pipe
-        self.start_offset = start_offset
-        self.end_offset = end_offset
-        self.queue = {}
-        self.cv_queue_full = threading.Condition()
-        self.cv_new_element = threading.Condition()
-        self.bytes_written = start_offset
-        self.exit = False
-        self.next_offset_required = start_offset
-        self.chunk_offset_lock = threading.Lock()
-        self.offset_rejected = Queue.Queue()
+	def __init__(self, cursor, pipe, start_offset, end_offset):
+		self.cursor = cursor
+		self.pipe = pipe
+		self.start_offset = start_offset
+		self.end_offset = end_offset
+		self.queue = {}
+		self.cv_queue_full = threading.Condition()
+		self.cv_new_element = threading.Condition()
+		self.bytes_written = start_offset
+		self.exit = False
+		self.next_offset_required = start_offset
+		self.chunk_offset_lock = threading.Lock()
+		self.offset_rejected = Queue.Queue()
 
-    def run(self):
 
-        logger.info("ChunkWriter HELLO!")
+	def run(self):
 
-        while not self.exit and self.bytes_written < self.end_offset:
+		logger.info("ChunkWriter HELLO!")
 
-            while not self.exit and self.bytes_written < self.end_offset and self.bytes_written in self.queue:
+		while not self.exit and self.bytes_written < self.end_offset:
 
-                current_chunk = self.queue.pop(self.bytes_written)
+			while not self.exit and self.bytes_written < self.end_offset and self.bytes_written in self.queue:
 
-                try:
-                    os.write(self.pipe, current_chunk.data)
+				current_chunk = self.queue.pop(self.bytes_written)
 
-                    logger.info("ChunkWriter chunk %d escrito" % current_chunk.offset)
+				try:
+					os.write(self.pipe, current_chunk.data)
 
-                    self.bytes_written += current_chunk.size
+					logger.info("ChunkWriter chunk %d escrito"%current_chunk.offset)
 
-                    with self.cv_queue_full:
-                        self.cv_queue_full.notifyAll()
+					self.bytes_written+=current_chunk.size
 
-                except Exception as e:
-                    logger.info(str(e))
+					with self.cv_queue_full:
+						self.cv_queue_full.notifyAll()
 
-            if not self.exit and self.bytes_written < self.end_offset:
-                logger.info("ChunkWriter me duermo hasta que haya chunks nuevos en la cola")
+				except Exception as e:
+					logger.info(str(e))
 
-                with self.cv_new_element:
-                    self.cv_new_element.wait(1)
+			if not self.exit and self.bytes_written < self.end_offset:
 
-        self.exit = True
+				logger.info("ChunkWriter me duermo hasta que haya chunks nuevos en la cola")
 
-        logger.info("ChunkWriter BYE BYE")
+				with self.cv_new_element:
+					self.cv_new_element.wait(1)
 
-    def nextOffset(self):
+		self.exit = True
 
-        try:
-            next_offset = self.offset_rejected.get(False)
-        except Queue.Empty:
-            self.chunk_offset_lock.acquire()
+		logger.info("ChunkWriter BYE BYE")
 
-            next_offset = self.next_offset_required
 
-            self.next_offset_required = self.next_offset_required + CHUNK_SIZE if self.next_offset_required + CHUNK_SIZE < self.end_offset else -1;
+	def nextOffset(self):
+		
+		try:
+			next_offset = self.offset_rejected.get(False)
+		except Queue.Empty:
+			self.chunk_offset_lock.acquire()
 
-            self.chunk_offset_lock.release()
+			next_offset = self.next_offset_required
 
-        return next_offset
+			self.next_offset_required = self.next_offset_required + CHUNK_SIZE if self.next_offset_required + CHUNK_SIZE < self.end_offset else -1;
 
-    def calculateChunkSize(self, offset):
-        return min(CHUNK_SIZE, self.end_offset - offset + 1) if offset <= self.end_offset else -1
+			self.chunk_offset_lock.release()
+
+		return next_offset
+
+
+	def calculateChunkSize(self, offset):
+		return min(CHUNK_SIZE, self.end_offset - offset + 1) if offset <= self.end_offset else -1
+
+

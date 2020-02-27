@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-# Extraído de la librería de MEGA de richardasaurus
+#Extraído de la librería de MEGA de richardasaurus
 
-import base64
-import binascii
 import json
-import random
+import base64
 import struct
-
+import binascii
+import random
 try:
     from Crypto.Cipher import AES
 except ImportError:

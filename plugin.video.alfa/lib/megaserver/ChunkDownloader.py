@@ -1,153 +1,154 @@
 # -*- coding: utf-8 -*-
 
-import Chunk
+import threading
 import urllib2
+import Chunk
+import time
 from platformcode import logger
 
 MAX_CHUNK_BUFFER_SIZE = 20
-BLOCK_SIZE = 16 * 1024
-SOCKET_TIMEOUT = 15
-FORCE_PROXY_MODE = False
-
+BLOCK_SIZE = 16*1024
+SOCKET_TIMEOUT=15
+FORCE_PROXY_MODE=False
 
 class ChunkDownloader():
 
-    def __init__(self, id, cursor):
-        self.id = id
-        self.cursor = cursor
-        self.chunk_writer = cursor.chunk_writer
-        self.proxy_manager = cursor.proxy_manager
-        self.url = self.chunk_writer.cursor._file.url
-        self.proxy = None
-        self.exit = False
+	def __init__(self, id, cursor):
+		self.id = id
+		self.cursor = cursor
+		self.chunk_writer = cursor.chunk_writer
+		self.proxy_manager = cursor.proxy_manager
+		self.url = self.chunk_writer.cursor._file.url
+		self.proxy = None
+		self.exit = False
 
-    def run(self):
 
-        logger.info("ChunkDownloader [%d] HELLO!" % self.id)
+	def run(self):
 
-        error = False
+		logger.info("ChunkDownloader [%d] HELLO!" % self.id)
 
-        error509 = False
+		error = False
 
-        offset = -1
+		error509 = False
 
-        while not self.chunk_writer.exit and not self.exit:
+		offset = -1
 
-            try:
+		while not self.chunk_writer.exit and not self.exit:
 
-                while not self.chunk_writer.exit and not self.exit and len(
-                        self.chunk_writer.queue) >= MAX_CHUNK_BUFFER_SIZE:
-                    logger.info("ChunkDownloader %d me duermo porque la cola está llena!" % self.id)
-                    with self.chunk_writer.cv_queue_full:
-                        self.chunk_writer.cv_queue_full.wait(1)
+			try:
 
-                if not self.chunk_writer.exit and not self.exit:
+				while not self.chunk_writer.exit and not self.exit and len(self.chunk_writer.queue) >= MAX_CHUNK_BUFFER_SIZE:
+					logger.info("ChunkDownloader %d me duermo porque la cola está llena!" % self.id)
+					with self.chunk_writer.cv_queue_full:
+						self.chunk_writer.cv_queue_full.wait(1)
 
-                    if error509 or FORCE_PROXY_MODE:
+				if not self.chunk_writer.exit and not self.exit:
 
-                        if self.proxy and error509:
-                            logger.info("ChunkDownloader[%d] bloqueando proxy %s" % (self.id, self.proxy))
-                            self.proxy_manager.block_proxy(self.proxy)
+					if error509 or FORCE_PROXY_MODE:
 
-                        self.proxy = self.proxy_manager.get_fastest_proxy()
+						if self.proxy and error509:
+							logger.info("ChunkDownloader[%d] bloqueando proxy %s" % (self.id, self.proxy))
+							self.proxy_manager.block_proxy(self.proxy)
 
-                    if offset < 0 or not error:
-                        offset = self.chunk_writer.nextOffset()
+						self.proxy = self.proxy_manager.get_fastest_proxy()
 
-                    error = False
+					if offset<0 or not error:
+						offset = self.chunk_writer.nextOffset()
 
-                    error509 = False
+					error = False
 
-                    if offset >= 0:
+					error509 = False
 
-                        chunk = Chunk.Chunk(offset, self.chunk_writer.calculateChunkSize(offset))
+					if offset >= 0:
 
-                        logger.info("ChunkDownloader[%d] leyendo CHUNK %d" % (self.id, offset))
+						chunk = Chunk.Chunk(offset, self.chunk_writer.calculateChunkSize(offset))
 
-                        try:
+						logger.info("ChunkDownloader[%d] leyendo CHUNK %d" % (self.id, offset))
 
-                            logger.info("ChunkDownloader[%d] leyendo %s" % (
-                            self.id, self.url + ('/%d-%d' % (int(offset), int(offset) + chunk.size - 1))))
+						try:
 
-                            req = urllib2.Request(self.url + ('/%d-%d' % (int(offset), int(offset) + chunk.size - 1)))
+							logger.info("ChunkDownloader[%d] leyendo %s" % (self.id, self.url+('/%d-%d' % (int(offset), int(offset)+chunk.size-1))))
 
-                            if self.proxy:
-                                req.set_proxy(self.proxy, 'http')
-                                logger.info("ChunkDownloader[%d] usando proxy %s" % (self.id, self.proxy))
+							req = urllib2.Request(self.url+('/%d-%d' % (int(offset), int(offset)+chunk.size-1)))
 
-                            connection = urllib2.urlopen(req, timeout=SOCKET_TIMEOUT)
+							if self.proxy:
+								req.set_proxy(self.proxy, 'http')
+								logger.info("ChunkDownloader[%d] usando proxy %s" % (self.id, self.proxy))
 
-                            bytes_read = 0
+							connection = urllib2.urlopen(req, timeout=SOCKET_TIMEOUT)
 
-                            chunk.data = bytearray()
+							bytes_read = 0
 
-                            while bytes_read < chunk.size and not self.chunk_writer.exit and not self.exit:
-                                to_read = min(BLOCK_SIZE, chunk.size - bytes_read)
+							chunk.data = bytearray()
 
-                                try:
-                                    chunk.data += connection.read(to_read)
-                                    bytes_read += to_read
-                                except Exception:
-                                    pass
+							while bytes_read < chunk.size and not self.chunk_writer.exit and not self.exit:
+								to_read = min(BLOCK_SIZE, chunk.size - bytes_read)
 
-                            if not self.chunk_writer.exit and not self.exit:
+								try:
+									chunk.data+=connection.read(to_read)
+									bytes_read+=to_read
+								except Exception:
+									pass
 
-                                if len(chunk.data) != chunk.size:
-                                    error = True
-                                else:
-                                    self.chunk_writer.queue[chunk.offset] = chunk
-                                    with self.chunk_writer.cv_new_element:
-                                        self.chunk_writer.cv_new_element.notifyAll()
+							if not self.chunk_writer.exit and not self.exit:
 
-                        except urllib2.HTTPError as err:
-                            logger.info("ChunkDownloader[%d] HTTP ERROR %d" % (self.id, err.code))
+								if len(chunk.data) != chunk.size:
+									error = True
+								else:
+									self.chunk_writer.queue[chunk.offset]=chunk
+									with self.chunk_writer.cv_new_element:
+										self.chunk_writer.cv_new_element.notifyAll()
 
-                            error = True
+						except urllib2.HTTPError as err:
+							logger.info("ChunkDownloader[%d] HTTP ERROR %d" % (self.id, err.code))
 
-                            if offset >= 0:
-                                self.chunk_writer.offset_rejected.put(offset)
-                                offset = -1
+							error = True
 
-                            if err.code == 509:
-                                error509 = True
-                            elif err.code == 403:
-                                self.url = self.chunk_writer.cursor._file.refreshMegaDownloadUrl()
+							if offset >= 0:
+								self.chunk_writer.offset_rejected.put(offset)
+								offset=-1
 
-                        except urllib2.URLError as err:
-                            logger.info("ChunkDownloader[%d] URL ERROR %d" % (self.id, err.reason))
+							if err.code == 509:
+								error509 = True
+							elif err.code == 403:
+								self.url = self.chunk_writer.cursor._file.refreshMegaDownloadUrl()
 
-                            error = True
+						except urllib2.URLError as err:
+							logger.info("ChunkDownloader[%d] URL ERROR %d" % (self.id, err.reason))
 
-                            if offset >= 0:
-                                self.chunk_writer.offset_rejected.put(offset)
-                                offset = -1
+							error = True
 
-                            if err.code == 509:
-                                error509 = True
-                            elif err.code == 403:
-                                self.url = self.chunk_writer.cursor._file.refreshMegaDownloadUrl()
+							if offset >= 0:
+								self.chunk_writer.offset_rejected.put(offset)
+								offset=-1
 
-                        except urllib2.socket.timeout:
-                            logger.info("ChunkDownloader[%d] socket timeout" % self.id)
+							if err.code == 509:
+								error509 = True
+							elif err.code == 403:
+								self.url = self.chunk_writer.cursor._file.refreshMegaDownloadUrl()
+								
+						except urllib2.socket.timeout:
+							logger.info("ChunkDownloader[%d] socket timeout" % self.id)
 
-                            error = True
+							error = True
 
-                            if offset >= 0:
-                                self.chunk_writer.offset_rejected.put(offset)
-                                offset = -1
+							if offset >= 0:
+								self.chunk_writer.offset_rejected.put(offset)
+								offset=-1
 
-                            if not self.proxy:
-                                self.url = self.chunk_writer.cursor._file.refreshMegaDownloadUrl()
-                    else:
-                        logger.info("ChunkDownloader[%d] END OFFSET" % self.id)
-                        self.exit = True
+							if not self.proxy:
+								self.url = self.chunk_writer.cursor._file.refreshMegaDownloadUrl()
+					else:
+						logger.info("ChunkDownloader[%d] END OFFSET" % self.id)
+						self.exit = True
 
-            except Exception as e:
-                logger.info("ChunkDownloader[%d] %s" % (self.id, str(e)))
+			except Exception as e:
+				logger.info("ChunkDownloader[%d] %s" % (self.id, str(e)))
+				
+				if offset >= 0:
+					self.chunk_writer.offset_rejected.put(offset)
+				
+				self.exit = True
 
-                if offset >= 0:
-                    self.chunk_writer.offset_rejected.put(offset)
+		logger.info("ChunkDownloader [%d] BYE BYE" % self.id)
 
-                self.exit = True
-
-        logger.info("ChunkDownloader [%d] BYE BYE" % self.id)

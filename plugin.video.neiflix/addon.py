@@ -68,7 +68,6 @@ def update_favourites():
         favourites_xml.getroot().append(neiflix)
         favourites_xml.write(xbmc.translatePath('special://userdata/favourites.xml'))
 
-
 ALFA_URL = "https://raw.githubusercontent.com/tonikelope/neiflix_alfa/master/plugin.video.alfa/"
 
 ALFA_PATH = xbmc.translatePath('special://home/addons/plugin.video.alfa/')
@@ -77,21 +76,20 @@ FILES = ['channels/neiflix.py', 'channels/neiflix.json', 'servers/nei.py', 'serv
          'resources/media/channels/banner/neiflix2_b.png', 'resources/media/channels/thumb/neiflix2_t.png',
          'resources/media/channels/fanart/neiflix2_f.png']
 
-installed = False
+if not os.path.exists(xbmc.translatePath('special://home/addons/plugin.video.neiflix/installed')):
 
-for f in FILES:
-    if not os.path.exists(ALFA_PATH + f):
-        urllib.urlretrieve(ALFA_URL + f, ALFA_PATH + f)
-        installed = True
+    with open(xbmc.translatePath('special://home/addons/plugin.video.neiflix/installed'), 'w+') as f:
+        pass
 
-if installed:
+    for f in FILES:
+        if not os.path.exists(ALFA_PATH + f):
+            urllib.urlretrieve(ALFA_URL + f, ALFA_PATH + f)
+
     improve_streaming()
     update_favourites()
-    ret = xbmcgui.Dialog().yesno(xbmcaddon.Addon().getAddonInfo('name'),
-                                 'Se ha añadido NEIFLIX a ALFA.\n\nES NECESARIO REINICIAR KODI PARA QUE TODOS LOS CAMBIOS TENGAN EFECTO.\n\n¿Quieres reiniciar KODI ahora mismo?')
+    ret = xbmcgui.Dialog().yesno(xbmcaddon.Addon().getAddonInfo('name'), 'Se ha añadido NEIFLIX a ALFA.\n\nES NECESARIO REINICIAR KODI PARA QUE TODOS LOS CAMBIOS TENGAN EFECTO.\n\n¿Quieres reiniciar KODI ahora mismo?')
 
     if ret:
         xbmc.executebuiltin('RestartApp')
 else:
-    xbmcgui.Dialog().ok(xbmcaddon.Addon().getAddonInfo('name'),
-                        'Para entrar a NEIFLIX tienes que hacerlo a través del icono de la sección FAVORITOS o buscar NEIFLIX en la lista de canales de ALFA.\n(Este icono sólo se usa para instalar NEIFLIX la primera vez).')
+    xbmcgui.Dialog().ok(xbmcaddon.Addon().getAddonInfo('name'), 'Para entrar a NEIFLIX tienes que hacerlo a través del icono de la sección FAVORITOS o buscar NEIFLIX en la lista de canales de ALFA.\n(Este icono sólo se usa para instalar NEIFLIX la primera vez).')
