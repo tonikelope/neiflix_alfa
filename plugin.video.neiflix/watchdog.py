@@ -21,7 +21,7 @@ FILES = ['channels/neiflix.py', 'channels/neiflix.json', 'servers/nei.py', 'serv
          'resources/media/channels/fanart/neiflix2_f.png']
 
 if not os.path.exists(xbmc.translatePath('special://home/addons/plugin.video.neiflix/installed')):
-    xbmc.executebuiltin("RunAddon('plugin.video.neiflix')")
+    xbmc.executebuiltin('RunAddon(plugin.video.neiflix)')
 
 # CHECK NEIFLIX CHANNEL UPDATES
 

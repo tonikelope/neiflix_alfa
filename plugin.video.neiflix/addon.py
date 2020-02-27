@@ -63,8 +63,7 @@ def update_favourites():
         favourite['thumbnail'] = xbmc.translatePath('special://home/addons/plugin.video.alfa' + favourite['thumbnail'])
         neiflix = ET.Element('favourite', {'name': 'NEIFLIX', 'thumb': xbmc.translatePath(
             'special://home/addons/plugin.video.alfa/resources/media/channels/thumb/neiflix2_t.png')})
-        neiflix.text = 'ActivateWindow(10025,\'plugin://plugin.video.alfa/?' + urllib.quote(
-            base64.b64encode(json.dumps(favourite))) + '\',return)'
+        neiflix.text = 'ActivateWindow(10025,"plugin://plugin.video.alfa/?' + urllib.quote(base64.b64encode(json.dumps(favourite)))  + '",return)'
         favourites_xml.getroot().append(neiflix)
         favourites_xml.write(xbmc.translatePath('special://userdata/favourites.xml'))
 
@@ -92,4 +91,4 @@ if not os.path.exists(xbmc.translatePath('special://home/addons/plugin.video.nei
     if ret:
         xbmc.executebuiltin('RestartApp')
 else:
-    xbmcgui.Dialog().ok(xbmcaddon.Addon().getAddonInfo('name'), 'Para entrar a NEIFLIX tienes que hacerlo a través del icono de la sección FAVORITOS o buscar NEIFLIX en la lista de canales de ALFA.\n(Este icono sólo se usa para instalar NEIFLIX la primera vez).')
+    xbmcgui.Dialog().ok(xbmcaddon.Addon().getAddonInfo('name'), 'Para entrar a NEIFLIX tienes que hacerlo a través del icono con la estrellita (dentro de FAVORITOS) o bien buscar NEIFLIX en la lista de canales de ALFA.')
