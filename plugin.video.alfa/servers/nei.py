@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-#Versión modificada del conector de MEGA para Noestasinvitado.com
+# Versión modificada del conector de MEGA para Noestasinvitado.com
 
 from core import scrapertools
 from platformcode import platformtools, logger
 
 files = None
 
+
 def test_video_exists(page_url):
-    
     from megaserver import Client
     c = Client(url=page_url, is_playing_fnc=platformtools.is_playing)
     global files
@@ -17,6 +17,7 @@ def test_video_exists(page_url):
         return False, "Error codigo %s" % str(files)
 
     return True, ""
+
 
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     page_url = page_url.replace('/embed#', '/#')

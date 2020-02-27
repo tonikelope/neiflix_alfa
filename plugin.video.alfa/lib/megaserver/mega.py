@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
-#Extraído de la librería de MEGA de richardasaurus
+# Extraído de la librería de MEGA de richardasaurus
 
-import re
-from .crypto import *
+import hashlib
 import json
 import urllib
+
 import urllib2
-import hashlib
+
+from .crypto import *
+
 try:
     from Crypto.PublicKey import RSA
 except ImportError:
@@ -15,7 +17,7 @@ except ImportError:
 
 def rsa_mega_decrypt(self, ciphertext):
     from Crypto.Math.Numbers import Integer
-    
+
     if not 0 < ciphertext < self._n:
         raise ValueError("Ciphertext too large")
     if not self.has_private():
@@ -26,6 +28,7 @@ def rsa_mega_decrypt(self, ciphertext):
 
 class RequestError(Exception):
     pass
+
 
 class Mega(object):
     def __init__(self, options=None):
@@ -45,7 +48,7 @@ class Mega(object):
         self.options = options
 
     def login(self, email=None, password=None):
-        
+
         if email:
             self.email = email
 
@@ -73,7 +76,7 @@ class Mega(object):
 
         if isinstance(resp, int):
             raise RequestError(resp)
-            
+
         self._login_process(resp, password_aes)
 
     def login_anonymous(self):
@@ -117,9 +120,9 @@ class Mega(object):
                 private_key = private_key[offset:]
 
             encrypted_sid = mpi_to_int(base64_url_decode(resp['csid']))
-            
+
             try:
-                #Pycrypto
+                # Pycrypto
                 rsa_decrypter = RSA.construct(
                     (self.rsa_private_key[0] * self.rsa_private_key[1],
                      0L, self.rsa_private_key[2], self.rsa_private_key[0],
@@ -127,7 +130,7 @@ class Mega(object):
 
                 sid = '%x' % rsa_decrypter.key._decrypt(encrypted_sid)
             except ValueError:
-                #Pycryptodome
+                # Pycryptodome
                 rsa_decrypter = RSA.construct(
                     (self.rsa_private_key[0] * self.rsa_private_key[1],
                      0L, self.rsa_private_key[2], self.rsa_private_key[0],
@@ -138,7 +141,6 @@ class Mega(object):
 
             sid = binascii.unhexlify('0' + sid if len(sid) % 2 else sid)
             self.sid = base64_url_encode(sid[:43])
-
 
     def _getAccountVersionAndSalt(self):
 
@@ -151,7 +153,6 @@ class Mega(object):
 
         if 's' in resp:
             self.salt = resp['s']
-
 
     def _api_request(self, data):
         params = {'id': self.sequence_num}

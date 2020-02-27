@@ -1,22 +1,19 @@
 # -*- coding: utf-8 -*-
-#Basado en la librería de MEGA que programó divadr y modificado por tonikelope para dar soporte a MEGACRYPTER
+# Basado en la librería de MEGA que programó divadr y modificado por tonikelope para dar soporte a MEGACRYPTER
 
-import base64
-import hashlib
-import json
-import random
-import struct
+import socket
 import time
 import urllib
-import urllib2
-import socket
-from .crypto import *
 from threading import Thread
+
+import urllib2
 from file import File
 from handler import Handler
-from server import Server
+from platformcode import logger
 from proxy import MegaProxyServer
-from platformcode import logger, config
+from server import Server
+
+from .crypto import *
 
 
 class Client(object):
@@ -67,7 +64,12 @@ class Client(object):
             if (self.file and self.file.cursor) or (self.is_playing_fnc and self.is_playing_fnc()):
                 self.last_connect = time.time()
 
-            if self.auto_shutdown and ((self.connected and self.last_connect and self.is_playing_fnc and not self.is_playing_fnc() and time.time() - self.last_connect - 1 > self.timeout) or ((not self.file or not self.file.cursor) and self.start_time and self.wait_time and not self.connected and time.time() - self.start_time - 1 > self.wait_time) or ((not self.file or not self.file.cursor) and self.timeout and self.connected and self.last_connect and not self.is_playing_fnc and time.time() - self.last_connect - 1 > self.timeout)):
+            if self.auto_shutdown and ((
+                                               self.connected and self.last_connect and self.is_playing_fnc and not self.is_playing_fnc() and time.time() - self.last_connect - 1 > self.timeout) or (
+                                               (
+                                                       not self.file or not self.file.cursor) and self.start_time and self.wait_time and not self.connected and time.time() - self.start_time - 1 > self.wait_time) or (
+                                               (
+                                                       not self.file or not self.file.cursor) and self.timeout and self.connected and self.last_connect and not self.is_playing_fnc and time.time() - self.last_connect - 1 > self.timeout)):
                 self.stop()
 
     def stop(self):
@@ -134,7 +136,7 @@ class Client(object):
                 mc_req_data['reverse'] = reverse
                 mega_proxy_port = int(reverse.split(":")[0])
                 mega_proxy_pass = base64.b64decode(reverse.split(":")[1]).split(":")[1]
-                self.load_mega_proxy('',mega_proxy_port,mega_proxy_pass)
+                self.load_mega_proxy('', mega_proxy_port, mega_proxy_pass)
 
             if mega_sid:
                 attributes['sid'] = mega_sid

@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
-#Basado en el código de gschizas y modificado por tonikelope para NEIFLIX
+# Basado en el código de gschizas y modificado por tonikelope para NEIFLIX
 
-import socket
-import select
-import re
-import hashlib
 import base64
-from threading import Thread
+import re
+import select
+import socket
 from threading import Lock
-from platformcode import config, logger
+from threading import Thread
 
+from platformcode import logger
 
 BUFFER_SIZE = 4096
 MAX_LISTEN = 10
@@ -26,7 +25,8 @@ class Forward:
             self.forward.connect((host, port))
             return self.forward
         except Exception, e:
-            print e
+            print
+            e
             return False
 
 
@@ -55,7 +55,8 @@ class MegaProxyServer(Thread):
 
     @synchronized
     def stop_server(self):
-        print "Stopping server..."
+        print
+        "Stopping server..."
         self.stop = True
 
     @synchronized
@@ -80,18 +81,21 @@ class MegaProxyServer(Thread):
                 else:
                     self.on_recv()
 
-        print "Bye bye"
+        print
+        "Bye bye"
 
     def on_accept(self):
 
         clientsock, clientaddress = self.server.accept()
 
-        print clientaddress, "has connected"
+        print
+        clientaddress, "has connected"
 
         self.input_list.append(clientsock)
 
     def on_close(self):
-        print self.s.getpeername(), "has disconnected"
+        print
+        self.s.getpeername(), "has disconnected"
         # remove objects from input_list
         self.input_list.remove(self.s)
         self.input_list.remove(self.channel[self.s])
@@ -130,12 +134,16 @@ class MegaProxyServer(Thread):
                     self.channel[forward] = self.s
                     self.s.send("HTTP/1.1 200 Connection established\r\nProxy-agent: Neiflix/0.1\r\n\r\n")
                 else:
-                    print "Can't establish connection with remote server.",
-                    print "Closing connection with client side"
+                    print
+                    "Can't establish connection with remote server.",
+                    print
+                    "Closing connection with client side"
                     self.s.close()
             else:
-                print "Can't establish connection with remote server.",
-                print "Closing connection with client side"
+                print
+                "Can't establish connection with remote server.",
+                print
+                "Closing connection with client side"
                 self.s.close()
         else:
             self.channel[self.s].send(data)

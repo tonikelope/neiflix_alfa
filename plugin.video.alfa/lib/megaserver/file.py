@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
-#Basado en la librería de MEGA que programó divadr y modificado por tonikelope para dar soporte a MEGACRYPTER
+# Basado en la librería de MEGA que programó divadr y modificado por tonikelope para dar soporte a MEGACRYPTER
 
-import urllib2
 import threading
+
 import MegaProxyManager
+import urllib2
 from cursor import Cursor
 
-SOCKET_TIMEOUT=15
+SOCKET_TIMEOUT = 15
+
 
 class File(object):
     def __init__(self, info, file_id, key, file, client, folder_id=None):
@@ -22,7 +24,7 @@ class File(object):
         self.size = file["s"]
         self.request = None
         self.k = self.key[0] ^ self.key[4], self.key[1] ^ self.key[5], self.key[2] ^ self.key[6], self.key[3] ^ \
-            self.key[7]
+                 self.key[7]
         self.iv = self.key[4:6] + (0, 0)
         self.initial_value = (((self.iv[0] << 32) + self.iv[1]) << 64)
         if not self.folder_id:
@@ -32,14 +34,12 @@ class File(object):
         self.url_lock = threading.Lock()
         self.proxy_manager = MegaProxyManager.MegaProxyManager()
 
-
     def create_cursor(self, offset):
         c = Cursor(self)
         c.seek(offset)
         self.cursor = True
         self.cursors.append(c)
         return c
-
 
     def checkMegaDownloadUrl(self, url):
 
@@ -61,10 +61,9 @@ class File(object):
 
             error509 = False
 
-
             try:
 
-                req = urllib2.Request(url+'/0-0')
+                req = urllib2.Request(url + '/0-0')
 
                 if proxy:
                     req.set_proxy(proxy, 'http')
@@ -84,18 +83,16 @@ class File(object):
                 else:
                     error = True
             except urllib2.socket.timeout:
-            	if not proxy:
-            		error = True
-
+                if not proxy:
+                    error = True
 
     def refreshMegaDownloadUrl(self):
 
         with self.url_lock():
-
             url = self.url
-        
+
             while not url or not self.checkMegaDownloadUrl(url):
-                url=self.get_new_url_from_api()
+                url = self.get_new_url_from_api()
 
             self.url = url
 
@@ -120,7 +117,6 @@ class File(object):
             if 'sid' in self.info:
                 mc_req_data['sid'] = self.info['sid']
 
-            mc_dl_res=self._client.mc_api_req(self.info['mc_api_url'], mc_req_data)
+            mc_dl_res = self._client.mc_api_req(self.info['mc_api_url'], mc_req_data)
 
             return mc_dl_res['url']
-

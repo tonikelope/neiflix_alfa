@@ -3,9 +3,11 @@
   "name": "NEIFLIX",
   "active": true,
   "adult": false,
-  "language": ["cast"],
+  "language": [
+    "cast"
+  ],
   "thumbnail": "neiflix2_t.png",
-  "banner" : "neiflix2_b.png",
+  "banner": "neiflix2_b.png",
   "fanart": "neiflix2_f.png",
   "categories": [
     "movie",
