@@ -25,7 +25,7 @@ from platformcode import platformtools
 
 CHECK_MEGA_STUFF_INTEGRITY = True
 
-NEIFLIX_VERSION = "1.24"
+NEIFLIX_VERSION = "1.25"
 
 NEIFLIX_LOGIN = config.get_setting("neiflix_user", "neiflix")
 
@@ -851,7 +851,8 @@ def find_video_gvideo_links(item, data):
             re.IGNORECASE).search(data)
 
         if thanks_match:
-            data = httptools.downloadpage(item.url + thanks_match.group(0)).data
+            httptools.downloadpage(item.url + thanks_match.group(0))
+            data=httptools.downloadpage(item.url).data
 
     itemlist = []
 
@@ -863,7 +864,7 @@ def find_video_gvideo_links(item, data):
 
         if len(matches) > 1:
 
-            for url in matches:
+            for url in list(set(matches)):
                 itemlist.append(
                     Item(channel=item.channel, action="play", server='gvideo', title='[GVIDEO] ' + item.title, url=url,
                          parentContent=item, folder=False))
@@ -885,7 +886,9 @@ def find_video_mega_links(item, data):
             re.IGNORECASE).search(data)
 
         if thanks_match:
-            data = httptools.downloadpage(item.url + thanks_match.group(0)).data
+            httptools.downloadpage(item.url + thanks_match.group(0))
+            data=httptools.downloadpage(item.url).data
+
 
     itemlist = []
 
@@ -899,7 +902,7 @@ def find_video_mega_links(item, data):
 
             i = 1
 
-            for id in matches:
+            for id in list(set(matches)):
                 itemlist.append(Item(channel=item.channel, action="get_video_mega_links_group",
                                      title='[' + str(i) + '/' + str(len(matches)) + '] ' + item.title, url=item.url,
                                      mc_group_id=id, folder=True))
